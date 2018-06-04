@@ -1,81 +1,77 @@
 import sys
 import cv2
+import numpy as np
  
-if __name__ == '__main__':
-	# If image path and f/q is not passed as command
-	# line arguments, quit and display help message
-	if len(sys.argv) < 3:
-		print(__doc__)
-		sys.exit(1)
- 
-	# speed-up using multithreads
-	cv2.setUseOptimized(True);
-	cv2.setNumThreads(4);
- 
-	# read image
-	im = cv2.imread(sys.argv[1])
+for k in range(10):
+	cv2.setUseOptimized(True)
+	cv2.setNumThreads(4)
+	im = cv2.imread('./dev/'+str(k+1)+'_.jpg')
 	# resize image
 	newHeight = 1000
 	newWidth = int(im.shape[1]*1000/im.shape[0])
 	im = cv2.resize(im, (newWidth, newHeight))
- 
-	# create Selective Search Segmentation Object using default parameters
+
 	ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()
- 
-	# set input image on which we will run segmentation
 	ss.setBaseImage(im)
- 
-	# Switch to fast but low recall Selective Search method
-	if (sys.argv[2] == 'f'):
-		ss.switchToSelectiveSearchFast()
- 
-	# Switch to high recall but slow Selective Search method
-	elif (sys.argv[2] == 'q'):
-		ss.switchToSelectiveSearchQuality()
-	# if argument is neither f nor q print help message
-	else:
-		print(__doc__)
-		sys.exit(1)
+	ss.switchToSelectiveSearchQuality()
  
 	# run selective search segmentation on input image
 	rects = ss.process()
-	print('Total Number of Region Proposals: {}'.format(len(rects)))
-	 
-	# number of region proposals to show
-	numShowRects = 100
-	# increment to increase/decrease total number
-	# of reason proposals to be shown
-	increment = 50
-
-	while True:
-		# create a copy of original image
-		imOut = im.copy()
- 
-		# itereate over all the region proposals
-		for i, rect in enumerate(rects):
-			# draw rectangle for region proposal till numShowRects
-			if (i < numShowRects):
-				x, y, w, h = rect
-				cv2.rectangle(imOut, (x, y), (x+w, y+h), (0, 255, 0), 1, cv2.LINE_AA)
-			else:
+	rec = []
+	imOut = im.copy()
+	for i, rect in enumerate(rects):
+		x, y, w, h = rect
+		if w >= h * 2:
+			continue
+		if w <= 5:
+			continue
+		if w >= newWidth*0.9 or h>=newHeight*0.9:
+			continue
+		rec.append((x,y,x+w,y+h))
+		#cv2.rectangle(imOut, (x, y), (x+w, y+h), (0, 255, 0), 1, cv2.LINE_AA)
+	ava = [True for i in range(len(rec))]
+	for i in range(len(rec)):
+		xi, yi, wi, hi = rec[i]
+		for j in range(len(rec)):
+			if i==j:
+				continue
+			xj, yj, wj, hj = rec[j]
+			if xi >= xj and yi>=yj and wi<=wj and hi<=hj:
+				ava[i]=False
 				break
- 
+	im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+	for i in range(len(rec)):
+		if ava[i]:
+			x, y, w, h = rec[i]
+			p = [0 for i in range(w-x)]
+			rmx = [0 for i in range(w-x)]
+			for j in range(w-x):
+				lo = 0
+				hi = 0
+				for l in range(h-y):
+					if im[j+x, l+y]<= 127:
+						lo = l
+						break
+				for l in range(h-y):
+					if im[j+x, l+y]<= 127:
+						hi = l+1
+
+				p[j] = hi-lo
+			'''rmx[w-x-1] = p[w-x-1]
+			for j in range(1, w-x):
+				rmx[w-x-1-j] = np.max(p[w-x-1-j], rmx[w-x-j])
+
+			segpoint = []
+			segpoint.append(x)
+			lmx = 0
+			for j in range(w-x):
+				lmx = np.max(lmx, p[j])
+				if lmx - p[j] >= 20 '''
+			print(p)
+
+			cv2.rectangle(imOut, (x, y), (w, h), (0, 255, 0), 1, cv2.LINE_AA)
+	#while True:
 		# show output
-		cv2.imshow("Output", imOut)
- 
-		# record key press
-		k = cv2.waitKey(0) & 0xFF
- 
-		# m is pressed
-		if k == 109:
-			# increase total number of rectangles to show by increment
-			numShowRects += increment
-		# l is pressed
-		elif k == 108 and numShowRects > increment:
-			# decrease total number of rectangles to show by increment
-			numShowRects -= increment
-		# q is pressed
-		elif k == 113:
-			break
+	cv2.imwrite('./dev/'+str(k+1)+'__.jpg', imOut)
 	# close image show window
-	cv2.destroyAllWindows()
+	#cv2.destroyAllWindows()

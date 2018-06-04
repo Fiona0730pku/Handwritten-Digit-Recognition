@@ -1,20 +1,23 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image, ImageFilter
 
 for i in range(10):
-	img = cv2.imread('./dev/'+str(i+1)+'.jpg', 0)
+	img = Image.open('./dev/'+str(i+1)+'.jpg').convert('L')
+	pixel = img.load()
+	for x in range(img.width):
+		for y in range(img.height):
+			pixel[x, y] = 255 if pixel[x, y] > 150 else 0
+	img = np.asarray(img)
+	
 	rows,cols = img.shape[:2]
-	for i in range(rows):
-		for j in range(cols):
-			if img[i][j] > 250:
-				img[i][j] = 255
-			else:
-				img[i][j] = 0
 
-	#ret,img = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
-	edges = cv2.Canny(img,20,20)
+	edges = cv2.Canny(img,20,50)
 	im = img.copy()
+
+	#cv2.imwrite('./dev/'+str(i+1)+'_.jpg', edges)
+
 	#hough transform
 	lines = cv2.HoughLinesP(edges,1,np.pi/180,150,minLineLength=10,maxLineGap=50)
 	lines1 = lines[:,0,:]#提取为二维
@@ -33,7 +36,10 @@ for i in range(10):
 		x2 = int(x2)
 		y1 = int(y1)
 		y2 = int(y2)
-		cv2.line(img,(0,y1),(cols,y2),(255,255,255),2)
+		cv2.line(img,(0,y1),(cols,y2),(255,255,255),3)
 
 	img = img[550: rows, 0: cols]
+	img = Image.fromarray(np.uint8(img))
+	img = img.filter(ImageFilter.MinFilter())
+	img = np.asarray(img)
 	cv2.imwrite('./dev/'+str(i+1)+'_.jpg', img)
