@@ -2,7 +2,7 @@ import sys
 import cv2
 import numpy as np
  
-def segment(im):		
+def segment(im):
 	kernel = np.ones((5,5),np.uint8)
 	im = cv2.erode(im,kernel,iterations = 1)
 		

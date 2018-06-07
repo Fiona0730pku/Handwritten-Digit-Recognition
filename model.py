@@ -64,4 +64,4 @@ def train():
 
 		test()
 
-train()
+test()

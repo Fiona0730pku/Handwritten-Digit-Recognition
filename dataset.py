@@ -24,7 +24,6 @@ class MNIST(data.Dataset):
 		image = ToTensor()(image)
 
 		label = self.labels[index].split('_')[0]
-		#print(image)
 		
 		return image, int(label)
 

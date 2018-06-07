@@ -31,6 +31,9 @@ def testresult(region):
 		newImage.paste(region, (p, 0))
 		region = newImage
 	region = region.filter(ImageFilter.MinFilter)
+	newImage = Image.new("RGB", (32, 32), color=(255, 255, 255))
+	newImage.paste(region, (2, 2))
+	region = newImage
 	region = region.convert('1')
 	region = region.resize((28, 28))
 	region = ToTensor()(region)
@@ -62,7 +65,7 @@ def complete(inputAdd,outputAdd):
 		region=im[tmp[1]:tmp[3],tmp[0]:tmp[2]]
 		predict, believe = testresult(region)
 		cv2.rectangle(imOut,(tmp[0],tmp[1]),(tmp[2],tmp[3]),color[predict], 1, cv2.LINE_AA)
-		imOut=cv2.putText(imOut,str(believe),(tmp[0]-20,int((tmp[1]+tmp[3])/2)),font,1,color[predict],2)
+		imOut=cv2.putText(imOut,str(predict)+" "+str(believe),(tmp[0]-20,int((tmp[1]+tmp[3])/2)),font,1,color[predict],2)
 	cv2.imwrite(outputAdd,imOut)
 
 if __name__ == '__main__':
