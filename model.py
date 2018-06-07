@@ -9,7 +9,7 @@ from torch.optim import Adam
 from torch.autograd import Variable
 
 def test():
-	test_dataset = MNIST(root='.', subset='test')
+	test_dataset = MNIST(root='F:\\dataset', subset='test')
 	test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 	lenet = torch.load('./model/lenet.pth')
@@ -33,7 +33,7 @@ def test():
 
 
 def train():
-	train_dataset = MNIST(root='.', subset='train')
+	train_dataset = MNIST(root='F:\\dataset', subset='train')
 	train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True)
 
 	lenet = LeNet()

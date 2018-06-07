@@ -3,11 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter
 
-def hough(img)
+def hough(img):
+	img = Image.fromarray(img).convert('L')
 	pixel = img.load()
 	for x in range(img.width):
 		for y in range(img.height):
 			pixel[x, y] = 255 if pixel[x, y] > 150 else 0
+	img = img.convert('RGB')
 	img = np.asarray(img)
 	
 	rows,cols = img.shape[:2]
@@ -37,8 +39,7 @@ def hough(img)
 		y2 = int(y2)
 		cv2.line(img,(0,y1),(cols,y2),(255,255,255),3)
 
-	img = img[550: rows, 0: cols]
 	img = Image.fromarray(np.uint8(img))
 	img = img.filter(ImageFilter.MinFilter())
 	img = np.asarray(img)
-    return img
+	return img

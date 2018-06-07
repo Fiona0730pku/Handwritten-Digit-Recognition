@@ -1,14 +1,16 @@
 from lenet import LeNet
 from segmentation import segment
-from houghtrans import hough
+from hough import hough
 
 import torch
 import fire
 import sys
 import cv2
 import numpy as np
+import torch.nn.functional as F
 from PIL import Image
 from pylab import *
+from torch.autograd import Variable
 from torchvision.transforms import ToTensor
 #%matplotlib inline
 font=cv2.FONT_HERSHEY_SIMPLEX
@@ -17,47 +19,40 @@ color =[(255,0,0),(139,0,0),(199,21,133),(255,69,0),(255,255,0),(123,104,238),(5
 
 def testresult(region):
 	#输入一张图片region return这张图片上数字的预测值和它的置信度
-
 	region = Image.fromarray(region)
 	region = region.convert('1')
+	region = region.resize((28, 28))
 	region = ToTensor()(region)
 
 
-	lenet = torch.load('./model/lenet.pth')
+	lenet = torch.load('C:/Users/李思航/Documents/GitHub/Handwritten-Digit-Recognition/model/lenet.pth')
 
 	lenet.cuda()
 	lenet.eval()
 
 	images=Variable(region.cuda()).cuda()
+	images = images.view(1,1,28,28)
 	outputs=lenet(images)
-	predict=outputs.max(1)[1].data
-	believe=1 #这里需要改成真正的置信度
-	return [predict,believe]
+	outputs = F.softmax(outputs)
+	predict=outputs.max(1)[1].data[0]
+	believe=outputs.data[0][predict] #这里需要改成真正的置信度
+	believe=round(believe, 2)
+	print(predict, believe)
+	return predict, believe
 
 def complete(inputAdd,outputAdd):
-	for k in range(1):
-			cv2.setUseOptimized(True)
-			cv2.setNumThreads(4)
-			im = cv2.imread(inputAdd)
-			im = hough(im)
-			newHeight = 1000
-			newWidth = int(im.shape[1]*1000/im.shape[0])
-			im = cv2.resize(im, (newWidth, newHeight))
-			imOut=im.copy()
-			box=segment(im)
-			print (box)
-			for i in range(0,len(box)):
-				tmp = box[i]
-				region=im[tmp[1]:tmp[3],tmp[0]:tmp[2]]
-				#cv2.line(im,(tmp[0],tmp[1]),(tmp[2],tmp[3]),(255,255,0),2)
-				#cv2.imwrite(str(k+1)+'_'+str(i)+'.jpg',region)
-				#cv2.imwrite(str(k+1)+'______ .jpg', im)
-				result=testresult(region)
-				predict=result[0] #预测值
-				believe=result[1] #置信度
-				cv2.rectangle(imOut,(tmp[0],tmp[1]),(tmp[2],tmp[3]),color[predict], 1, cv2.LINE_AA)
-				imOut=cv2.putText(imOut,str(believe),(tmp[0]-20,(tmp[1]+tmp[3])/2),font,1.2,color[predict],2)
-				cv2.imwrite(outputAdd,imOut)
+	im = cv2.imread(inputAdd)
+	imOut=im.copy()
+	im = hough(im)
+	box=segment(im)
+	print (box)
+	for i in range(0,len(box)):
+		tmp = box[i]
+		region=im[tmp[1]:tmp[3],tmp[0]:tmp[2]]
+		predict, believe = testresult(region)
+		cv2.rectangle(imOut,(tmp[0],tmp[1]),(tmp[2],tmp[3]),color[predict], 1, cv2.LINE_AA)
+		imOut=cv2.putText(imOut,str(believe),(tmp[0]-20,int((tmp[1]+tmp[3])/2)),font,1,color[predict],2)
+	cv2.imwrite(outputAdd,imOut)
 
 if __name__ == '__main__':
-  fire.Fire(complete)
+	fire.Fire(complete)
