@@ -8,7 +8,7 @@ import sys
 import cv2
 import numpy as np
 import torch.nn.functional as F
-from PIL import Image
+from PIL import Image, ImageFilter
 from pylab import *
 from torch.autograd import Variable
 from torchvision.transforms import ToTensor
@@ -20,6 +20,17 @@ color =[(255,0,0),(139,0,0),(199,21,133),(255,69,0),(255,255,0),(123,104,238),(5
 def testresult(region):
 	#输入一张图片region return这张图片上数字的预测值和它的置信度
 	region = Image.fromarray(region)
+	w, h = region.size
+	if w >= h:
+		region = region.resize((28, 28))
+	else:
+		newWidth = int(w * 28 / h)
+		newImage = Image.new("RGB", (28, 28), color=(255, 255, 255))
+		region = region.resize((newWidth, 28))
+		p = int((28 - newWidth) / 2)
+		newImage.paste(region, (p, 0))
+		region = newImage
+	region = region.filter(ImageFilter.MinFilter)
 	region = region.convert('1')
 	region = region.resize((28, 28))
 	region = ToTensor()(region)
