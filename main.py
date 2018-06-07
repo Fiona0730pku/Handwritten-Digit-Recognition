@@ -56,7 +56,7 @@ def complete(inputAdd,outputAdd):
 				predict=result[0] #预测值
 				believe=result[1] #置信度
 				cv2.rectangle(imOut,(tmp[0],tmp[1]),(tmp[2],tmp[3]),color[predict], 1, cv2.LINE_AA)
-				imOut=cv2.putText(imOut,str(believe),(tmp[0]-1,(tmp[1]+tmp[3])/2),font,1.2,color[predict],2)
+				imOut=cv2.putText(imOut,str(believe),(tmp[0]-20,(tmp[1]+tmp[3])/2),font,1.2,color[predict],2)
 				cv2.imwrite(outputAdd,imOut)
 
 if __name__ == '__main__':
