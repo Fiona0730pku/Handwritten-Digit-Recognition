@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 def test(region):
-
+	#输入一张图片region return这张图片上数字的预测值和它的置信度
 	
 
 for k in range(1):
