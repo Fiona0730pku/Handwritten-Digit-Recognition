@@ -3,8 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageFilter
 
-for i in range(10):
-	img = Image.open('./dev/'+str(i+1)+'.jpg').convert('L')
+def hough(img)
 	pixel = img.load()
 	for x in range(img.width):
 		for y in range(img.height):
@@ -42,4 +41,4 @@ for i in range(10):
 	img = Image.fromarray(np.uint8(img))
 	img = img.filter(ImageFilter.MinFilter())
 	img = np.asarray(img)
-	cv2.imwrite('./dev/'+str(i+1)+'_.jpg', img)
+    return img
