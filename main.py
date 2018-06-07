@@ -1,5 +1,6 @@
 from lenet import LeNet
 from segmentation import segment
+from houghtrans import hough
 
 import torch
 import fire
@@ -9,10 +10,10 @@ import numpy as np
 from PIL import Image
 from pylab import *
 from torchvision.transforms import ToTensor
-%matplotlib inline
+#%matplotlib inline
 font=cv2.FONT_HERSHEY_SIMPLEX
 
-color=［(255,0,0),(139,0,0),(199,21,133),(255,69,0),(255,255,0),(123,104,238),(50,205,50),(128,128,0),(0,128,128),(0,0,205)］
+color =[(255,0,0),(139,0,0),(199,21,133),(255,69,0),(255,255,0),(123,104,238),(50,205,50),(128,128,0),(0,128,128),(0,0,205)]
 
 def testresult(region):
 	#输入一张图片region return这张图片上数字的预测值和它的置信度
@@ -38,6 +39,7 @@ def complete(inputAdd,outputAdd):
 			cv2.setUseOptimized(True)
 			cv2.setNumThreads(4)
 			im = cv2.imread(inputAdd)
+			im = hough(im)
 			newHeight = 1000
 			newWidth = int(im.shape[1]*1000/im.shape[0])
 			im = cv2.resize(im, (newWidth, newHeight))
